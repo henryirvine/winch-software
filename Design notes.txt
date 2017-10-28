@@ -34,7 +34,7 @@
     This is the state that is active after the winch is powered on.
     Sensors are recording, odometers initialize.
     Cooling pump/fans are active 
-    No drum motion should be occurring -- Alert if drum a drum is moving
+    No drum motion should be occurring -- Alert if a drum is moving
     Main and aux drum motors are disabled.
     Warning lights are off
     Enable ready/standby button.
