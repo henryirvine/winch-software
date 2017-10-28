@@ -1,22 +1,151 @@
-Winch control software design considerations
-Winch control/sensor functions
-Battery state (temperature/capacity)
-Cooling oil
-pump control
-Temperature (motor outlet or possibly delta T across motor)
-pressure 
-Load Pins
-Sheave Hall effect
-rope speed
-odometer
-Dog Clutch 
-Position
- Operation
-Air Pressure (required to fire guillotine)
-Aux Motors — These inverter controllers can probably be connected to the CANbus directly 
-Main motor — definitely via CANbus
-motor torque
-motor speed
-temperature?
-send torque commands
-Guillotine 
+* Winch control software design considerations
+** Winch control/sensor functions
+   Battery state (temperature/capacity)
+
+   Cooling oil
+   - pump control
+   - Temperature (motor outlet or possibly delta T across motor)
+   - pressure 
+
+   Load Pins
+
+   Sheave Hall effect
+   - rope speed
+   - odometer
+
+   Dog Clutch 
+   - Position
+   - Operation
+
+   Air Pressure (required to fire guillotine)
+
+   Aux Motors - These inverter controllers can probably be connected to the CANbus directly 
+
+   Main motor - Definitely via CANbus
+   - motor torque
+   - motor speed
+   - temperature?
+   - send torque commands
+
+   Guillotine 
+
+** States
+*** Standby
+    This is the state that is active after the winch is powered on.
+    Sensors are recording, odometers initialize.
+    Cooling pump/fans are active 
+    No drum motion should be occurring -- Alert if drum a drum is moving
+    Main and aux drum motors are disabled.
+    Warning lights are off
+    Enable ready/standby button.
+    Ready/Standby button transitions to Ready State
+
+*** Ready
+    Warning lights are on
+    If drum motion is detected place that drum into retrieve mode.
+    
+    Drum Selection is available
+    - Drum must not be moving.
+    - Rope must be out.
+    - Air pressure checked 
+      
+    Selecting a drum causes a transition to Prepare state.
+    Ready/standby button transitions to standby
+    Abort button transitions to standby
+    
+    
+**** Retrieve -- sub-mode of Ready
+     Entered when drum motion is detected on a drum that is not selected for launch.
+     Announce on control panel.
+     Monitor drum speed and activate drag motor once speed is over retrieve threshold.
+     Deactivate drag motor once drum speed is below threshold.
+    
+*** Prepare
+    This state is entered when a drum is selected.
+    Condition lever activates aux motor for taking up slack.
+    Pre-arm checks
+    - Motor/Cooling 
+    - Battery State
+    - Launch Parameters
+      
+    Disable Ready/Standby button.
+    When pre-arm checks are satisfied, enable the Arm button
+    When enabled arm button is pressed, transition to Armed state
+    
+    If abort button is pressed, de-select drum and transition to standby.
+
+*** Armed
+    In this state, all prerequisites for starting the launch have been met.
+    Cooling pump and fans -> high speed
+    Charging system -> high rate
+
+    When condition lever is advanced to 100% detente:
+    - If using WR control, enable the WR controller
+      - When WR Launch-Initiate transition to Roll-Rotate
+    - If not using WR control, Transition to Roll-Rotate
+    
+    If abort button is pressed, de-select drum and transition to standby.
+    
+*** Roll-Rotate
+    Launch Begins.
+    Soft power-up to roll tension limit (~glider+pilot weight)
+    Maintain tension until speed limit reached then reduce as needed to maintain speed.
+     
+    After decreased tension is sensed, increasing tension transitions to climb state
+    Abort button transitions to abort state
+    Condition lever to zero transitions to recovery state
+    Cooling failure transitions to recovery state
+    Sensor failure transitions to recovery state
+    Release detection? Low tension x time?
+    
+*** Climb
+    Winch is in tension control mode, speed is controlled by pilot/climb angle
+    Disable WR control if it is being used.
+    Condition Lever to zero transitions to Recovery state
+    Cooling failure transitions to recovery state
+    Sensor failure transitions to recovery state
+    Abort button transitions to Abort state
+    Release detection transitions to recovery state
+
+**** Ramp-up
+**** Constant Tension
+**** Ramp-down
+    
+*** Recovery
+    Condition lever adjusts winch speed. 
+    Active stop engaged when odometer reaches close limit or abort button pressed
+    Deselect drum once stopped.
+    Transition to ready once deselect completes
+    
+*** Abort
+    Fire guillotine on the selected drum
+    disable aux motors
+    Active stop drum motion on selected drum using regen braking.
+    when drum stopped, de-select drum
+    when de-select complete, transition to Standby state.
+
+** Control panel
+*** Condition lever
+    Function varies based on state.
+    Range 0-100% detente 100%-130%
+
+*** Abort button
+    Does something sensible in any state except standby.
+
+*** Arm 
+    Flashes when enabled, Steady when armed
+
+*** State lights
+    where are we in the state diagram.
+
+*** Warning lights 
+    drum motion
+    hi temp
+    lo batt
+    oil press
+    
+*** Ready lights
+    Launch parameters
+    
+*** Display window/LCD
+    Warnings and Info
