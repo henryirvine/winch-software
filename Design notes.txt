@@ -1,0 +1,22 @@
+Winch control software design considerations
+Winch control/sensor functions
+Battery state (temperature/capacity)
+Cooling oil
+pump control
+Temperature (motor outlet or possibly delta T across motor)
+pressure 
+Load Pins
+Sheave Hall effect
+rope speed
+odometer
+Dog Clutch 
+Position
+ Operation
+Air Pressure (required to fire guillotine)
+Aux Motors — These inverter controllers can probably be connected to the CANbus directly 
+Main motor — definitely via CANbus
+motor torque
+motor speed
+temperature?
+send torque commands
+Guillotine 
