@@ -1,4 +1,26 @@
 * Winch control software design considerations
+
+Given that you guys have a HC program running, I can't think of any reason not to use it.
+It was my assumption that the environment data would be passed in to the MC as part of the launch parameters. Isn't this part of what the HC does?
+
+My goal with creating a list of sensor/control functions is to start out by enumerating what has to be sensed/controlled. Once we have our heads around the
+big picture, I believe that we can start grouping things together based on what makes good design/engineering sense.
+
+As a first pass, and with a big nod to your prior design, how about this:
+ - Fairlead sensors, drum sensors, drum select, guillotine --- Sensor/Control - SCP
+ - Aux motors, cross wind motor, main motor with all associated cooling, power, BMS interface  --- motive processor -- MP
+ - Control panel -- easily handled by something small/quick/dirty like arduino or raspi -- ~10 -20 hz update over can bus -- CP
+ - Master control -- Probably needs to be on it's own board.  Only can bus connections, If we have a dedicated logger, could probably co-locate on board with MC.
+
+My thinking goes like this:
+SCP is going a fairly extensive wiring or interface board to handle connection to the various sensors and controlls.
+MP is going to be talking CAN to multiple ECU for the different motors as well as the BMS.  Having all that chatter on it's own network might be a good idea.
+Control Panel - easy to simulate control inputs to the MC, easy to simulate winch status and responses during developement of the control interface. 
+A quick and dirty way to change the interface will likely be needed during development.
+Why put the MC on it's own board? Simulation.  Can bus messages can be sent that simulate the entire rest of the winch in any state and MC response can likewise be
+observed by sniffing the canbus.  If we do a good job specifying the messages, we can get started with the
+programming and testing before the winch is physically complete.
+
 ** Winch control/sensor functions
    Battery state (temperature/capacity)
 
@@ -32,7 +54,31 @@
    - temperature?
    - send torque commands
 
-   Guillotine 
+   Guillotine
+   
+   Battery management system
+   - Battery total pack voltage.
+   - Current to/from motor controller
+   - Cell voltages (somewhere around 200 to monitored)
+   - Ground fault monitor
+   - Charger current
+   - Generator status
+
+   Beacon on/off
+
+   Fairlead test load cells
+
+   Host Controller
+
+   Logger, if not part of HC
+
+   Environment (indicated v true airspeed)
+   - airspeed
+   - temperature
+   - barometer
+
+   Receiver for remote button-box at the launch site
+
 
 ** States
 *** Standby
